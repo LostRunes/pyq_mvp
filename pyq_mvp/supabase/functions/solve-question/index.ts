@@ -15,8 +15,11 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Hardcoded for now because CLI setup is being tricky! 🐾
-    const apiKey = "AIzaSyCAlz85p8DP7Gd6OQZr5zWdqpb5676BOoY";
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
+
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not set");
+    }
 
     const { question } = await req.json();
 

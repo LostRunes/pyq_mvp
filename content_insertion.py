@@ -1,9 +1,15 @@
 import json
 import requests
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # ================= CONFIG =================
-SUPABASE_URL = "https://hoihnpzdlivaoywrshmk.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY"
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUBJECT_ID = os.getenv("SUBJECT_ID")
 
 HEADERS = {
     "apikey": SUPABASE_KEY,
@@ -11,8 +17,6 @@ HEADERS = {
     "Content-Type": "application/json",
     "Prefer": "return=representation"   # ✅ THIS FIXES IT
 }
-
-SUBJECT_ID = "5de91286-a10b-444e-84fd-879a7dde83d9"  # from subjects table
 
 # ==========================================
 

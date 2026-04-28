@@ -9,8 +9,9 @@ import 'screens/question_list_screen.dart';
 import 'screens/question_detail_screen.dart';
 import 'core/providers.dart';
 
-const supabaseUrl = 'https://hoihnpzdlivaoywrshmk.supabase.co';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+// TODO: Move these to a secure config or use --dart-define
+const supabaseUrl = 'YOUR_SUPABASE_URL';
+const supabaseKey = 'YOUR_SUPABASE_KEY';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
