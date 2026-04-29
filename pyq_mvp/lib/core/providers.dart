@@ -9,6 +9,8 @@ import '../models/topic.dart';
 import '../models/question.dart';
 import '../models/pyq_source.dart';
 import '../models/image_item.dart';
+import '../models/topic_resource.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final supabaseServiceProvider = Provider((ref) => SupabaseService());
 final aiServiceProvider = Provider((ref) => AiService());
@@ -45,6 +47,16 @@ final topicsProvider = FutureProvider.family<List<Topic>, String>((ref, subjectI
   return service.getTopics(subjectId);
 });
 
+final dashboardTopicsProvider = FutureProvider.family<List<Topic>, String>((ref, subjectId) {
+  final service = ref.watch(supabaseServiceProvider);
+  return service.getTopicsWithImportance(subjectId);
+});
+
+final topicResourcesProvider = FutureProvider.family<List<TopicResource>, String>((ref, topicId) {
+  final service = ref.watch(supabaseServiceProvider);
+  return service.getTopicResources(topicId);
+});
+
 final questionsProvider = FutureProvider.family<List<Question>, String>((ref, topicId) {
   final service = ref.watch(supabaseServiceProvider);
   return service.getQuestionsByTopic(topicId);
@@ -74,3 +86,49 @@ class PdfLoadingNotifier extends Notifier<bool> {
 }
 
 final pdfLoadingProvider = NotifierProvider<PdfLoadingNotifier, bool>(PdfLoadingNotifier.new);
+
+// Progress Tracking Provider
+class ProgressNotifier extends Notifier<Map<String, bool>> {
+  static const String _key = 'topic_progress';
+
+  @override
+  Map<String, bool> build() {
+    final prefs = ref.watch(sharedPrefsProvider);
+    final String? data = prefs.getString(_key);
+    if (data != null) {
+      try {
+        final Map<String, dynamic> decoded = Map<String, dynamic>.from(
+          Uri.decodeComponent(data).split(',').fold<Map<String, dynamic>>({}, (prev, element) {
+            final parts = element.split(':');
+            if (parts.length == 2) {
+              prev[parts[0]] = parts[1] == 'true';
+            }
+            return prev;
+          }),
+        );
+        return decoded.cast<String, bool>();
+      } catch (_) {
+        return {};
+      }
+    }
+    return {};
+  }
+
+  Future<void> toggleProgress(String topicId) async {
+    final prefs = ref.read(sharedPrefsProvider);
+    final newState = Map<String, bool>.from(state);
+    newState[topicId] = !(state[topicId] ?? false);
+    state = newState;
+    
+    final encoded = state.entries.map((e) => '${e.key}:${e.value}').join(',');
+    await prefs.setString(_key, Uri.encodeComponent(encoded));
+  }
+
+  bool isCompleted(String topicId) => state[topicId] ?? false;
+}
+
+final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError();
+});
+
+final progressProvider = NotifierProvider<ProgressNotifier, Map<String, bool>>(ProgressNotifier.new);

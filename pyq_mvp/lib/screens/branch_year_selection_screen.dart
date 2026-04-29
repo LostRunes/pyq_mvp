@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/branch.dart';
 import '../models/year.dart';
 import '../core/providers.dart';
+import '../widgets/theme_toggle_button.dart';
 
 class BranchYearSelectionScreen extends ConsumerStatefulWidget {
   const BranchYearSelectionScreen({super.key});
@@ -25,15 +26,8 @@ class _BranchYearSelectionScreenState
 
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          IconButton(
-            onPressed: () => ref.read(themeModeProvider.notifier).toggle(),
-            icon: Icon(
-              ref.watch(themeModeProvider) == ThemeMode.light
-                  ? Icons.dark_mode_outlined
-                  : Icons.light_mode_outlined,
-            ),
-          ),
+        actions: const [
+          ThemeToggleButton(),
         ],
       ),
       body: SafeArea(

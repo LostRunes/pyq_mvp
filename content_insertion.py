@@ -9,7 +9,7 @@ load_dotenv()
 # ================= CONFIG =================
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-SUBJECT_ID = os.getenv("SUBJECT_ID")
+SUBJECT_ID = "5de91286-a10b-444e-84fd-879a7dde83d9"
 
 HEADERS = {
     "apikey": SUPABASE_KEY,

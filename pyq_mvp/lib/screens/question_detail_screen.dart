@@ -7,7 +7,6 @@ import '../models/image_item.dart';
 import '../services/supabase_service.dart';
 
 import '../core/providers.dart';
-import '../widgets/theme_toggle_button.dart';
 import '../widgets/solution_sheet.dart';
 
 
@@ -23,7 +22,6 @@ class QuestionDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Question Detail'),
-        actions: const [ThemeToggleButton()],
       ),
       body: questionAsync.when(
         data: (question) => SingleChildScrollView(

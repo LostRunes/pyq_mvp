@@ -7,19 +7,31 @@ import 'screens/subject_list_screen.dart';
 import 'screens/topic_list_screen.dart';
 import 'screens/question_list_screen.dart';
 import 'screens/question_detail_screen.dart';
+import 'screens/subject_dashboard_screen.dart';
+import 'models/subject.dart';
 import 'core/providers.dart';
-
-// TODO: Move these to a secure config or use --dart-define
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_KEY';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  
   await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseKey,
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_KEY']!,
   );
-  runApp(const ProviderScope(child: PyqApp()));
+  
+  final prefs = await SharedPreferences.getInstance();
+  
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+      ],
+      child: const PyqApp(),
+    ),
+  );
 }
 
 class PyqApp extends ConsumerWidget {
@@ -41,6 +53,10 @@ class PyqApp extends ConsumerWidget {
         '/subjects': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
           return SubjectListScreen(branchId: args['branchId'], yearId: args['yearId']);
+        },
+        '/subject_dashboard': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return SubjectDashboardScreen(subject: args['subject'] as Subject);
         },
         '/topics': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

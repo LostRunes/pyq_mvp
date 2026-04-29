@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AiService {
-  // Hardcoded for now as requested 🐾
-  static const String _apiKey = "AIzaSyCAlz85p8DP7Gd6OQZr5zWdqpb5676BOoY";
+  String get _apiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
   static const String _primaryModel = "gemini-3.1-flash-lite-preview";
 
   Future<String> solveQuestion(String question) async {

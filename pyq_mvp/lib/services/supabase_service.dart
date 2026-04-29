@@ -8,6 +8,7 @@ import '../models/pyq_source.dart';
 import '../models/image_item.dart';
 import '../models/question_full.dart';
 import '../models/topic_with_questions.dart';
+import '../models/topic_resource.dart';
 
 class SupabaseService {
   final supabase = Supabase.instance.client;
@@ -25,7 +26,7 @@ class SupabaseService {
   Future<List<Subject>> getSubjects({required String branchId, required String yearId}) async {
     final res = await supabase
         .from('branch_subjects')
-        .select('subjects(id, name, code), semester')
+        .select('subjects(id, name, code, pyq_drive_link, notes_drive_link, course_outcome_link), semester')
         .eq('branch_id', branchId)
         .eq('year_id', yearId);
     return (res as List)
@@ -36,6 +37,73 @@ class SupabaseService {
   Future<List<Topic>> getTopics(String subjectId) async {
     final res = await supabase.from('topics').select().eq('subject_id', subjectId);
     return (res as List).map((e) => Topic.fromJson(e)).toList();
+  }
+
+  Future<List<Topic>> getTopicsWithImportance(String subjectId) async {
+    // 1. Fetch topics
+    final topics = await getTopics(subjectId);
+    if (topics.isEmpty) return [];
+
+    final topicIds = topics.map((t) => t.id).toList();
+
+    // 2. Fetch all question_topics for these topics
+    final qtRes = await supabase
+        .from('question_topics')
+        .select('topic_id, question_id')
+        .filter('topic_id', 'in', topicIds);
+    final qtList = qtRes as List;
+
+    final allQuestionIds = qtList.map((e) => e['question_id']).toSet().toList();
+    if (allQuestionIds.isEmpty) return topics;
+
+    // 3. Fetch all question_pyq_map with source years for these questions
+    final qpmRes = await supabase
+        .from('question_pyq_map')
+        .select('question_id, pyq_sources(year)')
+        .filter('question_id', 'in', allQuestionIds);
+    final qpmList = qpmRes as List;
+
+    // 4. Calculate scores for each topic
+    for (var topic in topics) {
+      final topicQuestionIds = qtList
+          .where((qt) => qt['topic_id'] == topic.id)
+          .map((qt) => qt['question_id'])
+          .toSet();
+
+      final relatedPyqs = qpmList
+          .where((qpm) => topicQuestionIds.contains(qpm['question_id']))
+          .toList();
+
+      final totalQuestions = topicQuestionIds.length;
+      final totalPyqs = relatedPyqs.length;
+      final uniqueYears = relatedPyqs
+          .map((qpm) {
+            final source = qpm['pyq_sources'];
+            if (source is Map) return source['year'];
+            if (source is List && source.isNotEmpty) return source[0]['year'];
+            return null;
+          })
+          .whereType<int>()
+          .toSet()
+          .length;
+
+      // Formula: score = (questions * 2) + (unique_years * 3) + (total_pyqs)
+      double score = (totalQuestions * 2.0) + (uniqueYears * 3.0) + totalPyqs;
+      
+      // Normalize or cap if needed, for now we'll pass the raw score
+      // We can normalize later in the UI relative to the max score in the list
+      topic.importanceScore = score;
+    }
+
+    return topics;
+  }
+
+  Future<List<TopicResource>> getTopicResources(String topicId) async {
+    final res = await supabase
+        .from('topic_resources')
+        .select()
+        .eq('topic_id', topicId);
+    return (res as List).map((e) => TopicResource.fromJson(e)).toList();
   }
 
   Future<List<Question>> getQuestionsByTopic(String topicId) async {

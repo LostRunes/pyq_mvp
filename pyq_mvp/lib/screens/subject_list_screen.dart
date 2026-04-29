@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/providers.dart';
-import '../widgets/theme_toggle_button.dart';
 
 class SubjectListScreen extends ConsumerWidget {
   final String branchId;
@@ -22,7 +21,6 @@ class SubjectListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Subjects'),
-        actions: const [ThemeToggleButton()],
       ),
       body: Column(
         children: [
@@ -71,10 +69,9 @@ class SubjectListScreen extends ConsumerWidget {
                       onTap: () {
                         Navigator.pushNamed(
                           context,
-                          '/topics',
+                          '/subject_dashboard',
                           arguments: {
-                            'subjectId': subject.id,
-                            'subjectName': subject.name,
+                            'subject': subject,
                           },
                         );
                       },

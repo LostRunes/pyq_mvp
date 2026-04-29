@@ -5,7 +5,6 @@ import '../models/topic.dart';
 import '../services/supabase_service.dart';
 
 import '../core/providers.dart';
-import '../widgets/theme_toggle_button.dart';
 import '../services/pdf_service.dart';
 import '../widgets/loading_overlay.dart';
 
@@ -48,7 +47,6 @@ class TopicListScreen extends ConsumerWidget {
                     }
                   },
           ),
-          const ThemeToggleButton(),
         ],
       ),
       body: Stack(
@@ -172,7 +170,7 @@ class TopicListScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              topic.summary,
+                              topic.summary ?? '',
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     height: 1.6,
